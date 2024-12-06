@@ -167,6 +167,7 @@ pub mod testing;
 /// Declares a spot that can trigger intentional failures
 ///
 /// See the [crate-level docs][crate] for details.
+#[cfg(feature = "enabled")]
 #[allow(clippy::crate_in_macro_def)]
 #[macro_export]
 macro_rules! failspot {
@@ -177,19 +178,11 @@ macro_rules! failspot {
         $($disabled: tt)*
     })?
 ) => {{
-    #[cfg(feature="enabled")]
-    {
-        if $crate::failspot!(<$e>::$n) {
-            $($enabled)*
-        } $(else {
-            $($disabled)*
-        })?
-    }
-
-    #[cfg(not(feature="enabled"))]
-    {
-        $($($disabled)*)?
-    }
+    if $crate::failspot!(<$e>::$n) {
+        $($enabled)*
+    } $(else {
+        $($disabled)*
+    })?
 }};
 
 (
@@ -209,7 +202,6 @@ macro_rules! failspot {
 };
 
 (<$e: ty>::$n: ident bail($err: expr)) => {{
-    #[cfg(feature="enabled")]
     if $crate::failspot!(<$e>::$n) {
         return Err($err.into());
     }
@@ -218,25 +210,59 @@ macro_rules! failspot {
     $crate::failspot!(<crate::FailSpotName>::$n bail($err))
 };
 (<$e: ty>::$n: ident) => {{
-    #[cfg(feature="enabled")]
-    {
-        <$e>::enabled(<$e>::$n)
-    }
-
-    #[cfg(not(feature="enabled"))]
-    {
-        false
-    }
+    <$e>::enabled(<$e>::$n)
 }};
 ($n: ident) => {
     $crate::failspot!(<crate::FailSpotName>::$n)
 };
 (<$e: ty>::$n: ident $($enabled: tt)+) => {{
-    #[cfg(feature="enabled")]
     if $crate::failspot!(<$e>::$n) {
         $($enabled)+
     }
 }};
+($n: ident $($enabled: tt)+) => {
+    $crate::failspot!(<crate::FailSpotName>::$n $($enabled)+)
+}}
+
+/// Declares a spot that can trigger intentional failures
+///
+/// See the [crate-level docs][crate] for details.
+#[cfg(not(feature = "enabled"))]
+#[allow(clippy::crate_in_macro_def)]
+#[macro_export]
+macro_rules! failspot {
+(
+    if <$e: ty>::$n: ident {
+        $($enabled: tt)*
+    } $(else {
+        $($disabled: tt)*
+    })?
+) => {{$($($disabled)*)?}};
+
+(
+    if $n: ident {
+        $($enabled: tt)*
+    } $(else {
+        $($disabled: tt)*
+    })?
+) => {
+    $crate::failspot!(
+        if <crate::FailSpotName>::$n {
+            $($enabled)*
+        } $(else {
+            $($disabled)*
+        })?
+    )
+};
+(<$e: ty>::$n: ident bail($err: expr)) => {{}};
+($n: ident bail($err: expr)) => {
+    $crate::failspot!(<crate::FailSpotName>::$n bail($err))
+};
+(<$e: ty>::$n: ident) => {false};
+($n: ident) => {
+    $crate::failspot!(<crate::FailSpotName>::$n)
+};
+(<$e: ty>::$n: ident $($enabled: tt)+) => {{}};
 ($n: ident $($enabled: tt)+) => {
     $crate::failspot!(<crate::FailSpotName>::$n $($enabled)+)
 }}

@@ -1,6 +1,6 @@
 [package]
 name = "failspot"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Chris Martin <marti4d@live.ca>"]
 edition = "2021"
 description = "A testing library that makes it easy(ish) to add intentional errors to a program"
