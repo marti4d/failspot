@@ -2,7 +2,6 @@
 
 [![crates.io](https://img.shields.io/crates/v/failspot?style=for-the-badge&logo=rust)](https://crates.io/crates/failspot)
 [![docs.rs](https://img.shields.io/docsrs/failspot?style=for-the-badge&logo=docs.rs&label=docs.rs)](https://docs.rs/failspot)
-![license](https://img.shields.io/crates/l/failspot?style=for-the-badge)
 
 A testing library that makes it easy(ish) to add intentional errors to a program
 
